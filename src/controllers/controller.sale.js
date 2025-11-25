@@ -1,20 +1,39 @@
 const { createSale, getSales } = require("../services/service.sale");
 
-exports.addSale = async (req, res) => {
+// Create a new sale
+exports.newSale = async (req, res) => {
   try {
-    const sale = await createSale({
-      items: req.body.items,
-      paymentType: req.body.paymentType,
-      cashier: req.user.id
-    });
+    const cashier = req.user?.id;
+    if (!cashier) return res.status(401).json({ msg: "Unauthorized" });
 
-    res.json(sale);
+    const { items, paymentType } = req.body;
+
+    // Basic validation
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ msg: "Cart items required" });
+    }
+
+    if (!["cash", "card"].includes(paymentType)) {
+      return res.status(400).json({ msg: "Invalid payment type" });
+    }
+
+    const sale = await createSale({ items, paymentType, cashier });
+
+    // Return sale including the generated saleId
+    return res.json(sale);
   } catch (err) {
-    res.status(400).json({ msg: err.message });
+    console.error("Sale creation error:", err.message);
+    return res.status(400).json({ msg: err.message });
   }
 };
 
-exports.listSales = async (req, res) => {
-  const data = await getSales();
-  res.json(data);
+// Get all sales
+exports.allSales = async (req, res) => {
+  try {
+    const sales = await getSales();
+    return res.json(sales);
+  } catch (err) {
+    console.error("Fetch sales error:", err.message);
+    return res.status(400).json({ msg: err.message });
+  }
 };

@@ -1,7 +1,7 @@
 const {
   createProduct,
   getProducts,
-  updateProduct,
+  updateStock,
   deleteProduct
 } = require("../services/service.product");
 
@@ -14,15 +14,19 @@ exports.addProduct = async (req, res) => {
   }
 };
 
-exports.listProducts = async (req, res) => {
-  const data = await getProducts();
-  res.json(data);
+exports.allProducts = async (req, res) => {
+  try {
+    const list = await getProducts();
+    res.json(list);
+  } catch (err) {
+    res.status(400).json({ msg: err.message });
+  }
 };
 
-exports.editProduct = async (req, res) => {
+exports.editStock = async (req, res) => {
   try {
-    const p = await updateProduct(req.params.id, req.body);
-    res.json(p);
+    const updated = await updateStock(req.params.id, req.body.stock);
+    res.json(updated);
   } catch (err) {
     res.status(400).json({ msg: err.message });
   }
@@ -30,8 +34,8 @@ exports.editProduct = async (req, res) => {
 
 exports.removeProduct = async (req, res) => {
   try {
-    await deleteProduct(req.params.id);
-    res.json({ msg: "Deleted" });
+    const out = await deleteProduct(req.params.id);
+    res.json(out);
   } catch (err) {
     res.status(400).json({ msg: err.message });
   }

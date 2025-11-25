@@ -1,16 +1,21 @@
 const express = require("express");
 const router = express.Router();
+
 const auth = require("../middleware/auth");
+const { allowRoles } = require("../middleware/role");
+
 const {
   addProduct,
-  listProducts,
-  editProduct,
+  allProducts,
+  editStock,
   removeProduct
 } = require("../controllers/controller.product");
 
-router.get("/", auth, listProducts);
-router.post("/", auth, addProduct);
-router.put("/:id", auth, editProduct);
-router.delete("/:id", auth, removeProduct);
+router.post("/", auth, allowRoles("admin"), addProduct);
+router.put("/:id/stock", auth, allowRoles("admin"), editStock);
+router.delete("/:id", auth, allowRoles("admin"), removeProduct);
+
+// Admin + Cashier
+router.get("/", auth, allowRoles("admin", "cashier"), allProducts);
 
 module.exports = router;
