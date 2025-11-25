@@ -13,9 +13,9 @@ app.use(express.json());
 connectDB(process.env.MONGO_URI);
 
 // Routes
-app.use("/api/auth", require("./routes/auth"));
-app.use("/api/products", require("./routes/products"));
-app.use("/api/sales", require("./routes/sales"));
+app.use("/api/auth", require("./routes/route.auth"));
+app.use("/api/products", require("./routes/route.product"));
+app.use("/api/sales", require("./routes/route.sale"));
 
 app.get("/", (req, res) => {
   res.send("POS API Running...");
