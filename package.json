@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-  "start": "node src/server.js",
-    "dev": "nodemon src/server.js"  },
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -15,7 +16,14 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
+<<<<<<< Updated upstream
+    "mongoose": "^9.0.0",
+    "stripe": "^20.0.0",
+    "uuid": "^13.0.0"
+=======
+    "mongodb": "^7.0.0",
     "mongoose": "^9.0.0"
+>>>>>>> Stashed changes
   },
   "devDependencies": {
     "nodemon": "^3.1.11"
