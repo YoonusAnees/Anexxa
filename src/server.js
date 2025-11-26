@@ -6,7 +6,12 @@ const connectDB = require("./config/db");
 dotenv.config();
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin:[
+   "http://localhost:5173",
+  "https://pos-tau-blond.vercel.app"
+  ],
+}));
 app.use(express.json());
 
 // DB
