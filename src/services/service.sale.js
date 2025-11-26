@@ -1,43 +1,44 @@
 const Sale = require("../models/model.sale");
 const Product = require("../models/model.product");
 
-// Create a new sale
-exports.createSale = async ({ items, paymentType, cashier }) => {
-  let total = 0;
+// Create sale & reduce stock
+exports.createSale = async ({ items, cashier, paymentType, stripePaymentId, status }) => {
+  const detailedItems = await Promise.all(
+    items.map(async (i) => {
+      const product = await Product.findById(i.product);
+      if (!product) throw new Error(`${i.name} not found`);
+      if (product.stock < i.qty) throw new Error(`${product.name} out of stock`);
 
-  for (const item of items) {
-    const product = await Product.findById(item.product);
+      // Reduce stock **only for paid or pending card sale**
+      if (status === "paid" || paymentType === "card") {
+        product.stock -= i.qty;
+        await product.save();
+      }
 
-    if (!product) throw new Error(`Product not found: ${item.product}`);
-    if (product.stock < item.qty)
-      throw new Error(`Not enough stock for ${product.name}`);
+      return {
+        product: product._id,
+        name: product.name,
+        qty: i.qty,
+        price: product.price,
+        subTotal: product.price * i.qty
+      };
+    })
+  );
 
-    item.price = product.price;
-    item.subTotal = item.qty * product.price;
+  const total = detailedItems.reduce((sum, x) => sum + x.subTotal, 0);
 
-    total += item.subTotal;
-
-    // Reduce product stock
-    product.stock -= item.qty;
-    await product.save();
-  }
-
-  // Create sale
   const sale = await Sale.create({
-    items,
-    paymentType,
+    items: detailedItems,
     total,
-    cashier
+    paymentType,
+    status: status || "paid",
+    cashier,
+    stripePaymentId
   });
 
-  return sale; // will include saleId
+  return sale;
 };
 
-// Get all sales
 exports.getSales = async () => {
-  return await Sale.find()
-    .populate("cashier", "name email")
-    .populate("items.product", "name price")
-    .sort({ createdAt: -1 })
-    .select("saleId items total paymentType cashier createdAt");
+  return await Sale.find().populate("cashier", "name");
 };

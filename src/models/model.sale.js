@@ -9,15 +9,16 @@ const saleItemSchema = new mongoose.Schema({
 });
 
 const saleSchema = new mongoose.Schema({
-  saleId: { type: String, unique: true }, // Custom ID like S001
+  saleId: { type: String, unique: true },
   items: [saleItemSchema],
   total: Number,
   paymentType: { type: String, enum: ["cash", "card"] },
+  status: { type: String, enum: ["pending", "paid"], default: "paid" }, // new field
   cashier: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  stripePaymentId: String, 
   createdAt: { type: Date, default: Date.now }
 });
 
-// Pre-save hook to generate saleId (async style)
 saleSchema.pre("save", async function () {
   if (!this.saleId) {
     const lastSale = await this.constructor.findOne().sort({ createdAt: -1 });
@@ -27,7 +28,6 @@ saleSchema.pre("save", async function () {
     }
     this.saleId = `S${String(lastIdNumber + 1).padStart(3, "0")}`;
   }
-  // no next() call needed in async function
 });
 
 module.exports = mongoose.model("Sale", saleSchema);
